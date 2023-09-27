@@ -1,8 +1,13 @@
 import React from 'react';
 import LocationSearch from './components/locationSearch';
+import Cart from './components/Cart';
+import { Table, Button } from "react-bootstrap";
+import { connect } from "react-redux";
+import { updateItems } from "./actions";
 class App extends React.Component {
 
 	constructor(props) {
+		console.log("...www",props);
 		super(props);
 		this.state = {
 			searchQuery: '',
@@ -13,6 +18,7 @@ class App extends React.Component {
 			showLatestCategories: false,
 			showMenuList: false,
 			searchInProgress: false,
+			itemList: props.items
 		};
 	}
 
@@ -78,9 +84,32 @@ class App extends React.Component {
 	handleClear = () => {
 		this.setState({ selectedCategory: null, selectedVendor: null, menudata: null, showMenuList: false });
 	};
+	clickHandler = (e) => {
+		console.log(e);
+		// let totalPrice = 0;
+		// const clickHandler = (e) => {
+		//   let items = props.items.slice();
+		//   items.map( (item) => {
+		// 	if(item.id === e.id){
+		// 	  item.selected = !item.selected;
+		// 	}
+		// 	return item;
+		//   })
+		//   props.updateItems(items);
+		// }
+		let items = this.state.itemList.slice();
+		console.log("ss",items);
+		items.map((item) => {
+			if (item.id === e.id) {
+				item.selected = !item.selected;
+			}
+			return item;
+		})
 
+		   .updateItems(items);
+	}
 	render() {
-		const { data, selectedCategory, selectedVendor, menuData, showLatestCategories, showMenuList } = this.state;
+		const { data, selectedCategory, selectedVendor, menuData, showLatestCategories, showMenuList, itemList } = this.state;
 
 		return (
 
@@ -371,11 +400,72 @@ class App extends React.Component {
 											))}
 										</div>
 									)}
+
+									{itemList && (
+										// console.log("itemList",itemList)
+										<div className="home">
+											<Table striped bordered condensed hover>
+												<thead>
+													<tr>
+														<th>#</th>
+														<th>
+															Name
+														</th>
+														<th>
+															Price
+														</th>
+														<th>
+															Remove to card
+														</th>
+													</tr>
+												</thead>
+
+												<tbody>
+													{
+														itemList.map((item, i) => {
+															console.log(item, i)
+															if (!item.selected) {
+															// totalPrice += item.price;
+															return (
+																<tr key={item.id}>
+																	<td>
+																		{i + 1}
+																	</td>
+																	<td>
+																		{item.name}
+																	</td>
+																	<td>
+																		{item.totalPrice}
+																	</td>
+																	<td>
+																		<Button bsStyle={item.selected ? "success" : "primary"} onClick={(e) => this.clickHandler(item)}>{item.selected ? "Remove" : "Add"}</Button>
+																	</td>
+																</tr>
+															)
+															}
+														})
+													}
+													<tr>
+														<th></th>
+														<th>
+															Total
+														</th>
+														<th colspan="2">
+															{/* {totalPrice} */}
+														</th>
+													</tr>
+												</tbody>
+
+											</Table>
+										</div>
+									)}
 								</div>
 							</div>
 						</div>
 					</div>
 				</section>
+
+
 				<footer class="footer spad">
 					<div class="container">
 						<div class="row">
@@ -441,9 +531,18 @@ class App extends React.Component {
 						</div>
 					</div>
 				</footer>
+
+
 			</div>
 		)
 	};
 }
+const mapStateToProps = state => ({
+	items: state.dummy.items
+})
 
-export default App;
+export default connect(
+	mapStateToProps, { updateItems }
+)(App)
+
+// export default App;
